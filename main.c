@@ -19,6 +19,9 @@
 
 unsigned char *buffer;
 unsigned int length;
+unsigned int *T;
+unsigned int buflen;
+unsigned int count[ 256 ];
 
 int label_compare(char *str1, char *str2) {
 /*Funcao compara strings */
@@ -164,9 +167,67 @@ int BWT( int TAM_BLOCO,char *name_input, char *name_output)
         }
         fwrite( ( char * )&k, sizeof( unsigned int ),1, fpout );
     }while(length == 0);
+    //}
     fclose(fpin);
     fclose(fpout);
     return 0;
+}
+
+int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
+{
+    unsigned int i, k, sum, previous;
+    FILE *fpin = NULL;
+    FILE *fpout = NULL;
+    
+    fpin = fopen(name_input,"rb");
+    fpout = fopen(name_output,"wb");
+        
+    buffer = (unsigned char*) malloc(sizeof(unsigned char)*(TAM_BLOCO+1));
+    T = (unsigned int*) malloc(sizeof(unsigned int)*(TAM_BLOCO+1));
+
+    while ( 42 ) {
+        if ( fread( ( char * )&buflen, sizeof( unsigned int ), 1, fpin ) == 0 )
+            break;
+        if ( fread( ( char * )buffer, 1, buflen, fpin ) != buflen )
+            abort( );
+        // Le o indice da linha original
+        fread( ( char * )&k, sizeof( unsigned int ), 1, fpin );
+        // Obtem a primeira coluna da matriz N x N original
+        // Para isso, roda uma versao modificada do Counting Sort
+        // que apenas guarda o numero de ocorrencias menores ou iguais ao caracter
+        // Deve-se lembrar de tratar o caracter EOF, considerado menor
+        // que qualquer outro caracter.
+        for ( i = 0; i < 256 ; ++i )
+            count[ i ] = 0;
+
+        for ( i = 0 ; i < buflen ; ++i )
+            ++count[ buffer[ i ] ];
+        --count[ 0 ];
+
+        sum = 1; // Considera o EOF como caracter anterior ao 0
+        previous = 0;
+        for ( i = 0 ; i < 256 ; ++i ) {
+            previous = count[ i ];
+            count[ i ] = sum;
+            sum += previous;
+        }
+
+        // Agora calcular a funcao de transformacao T
+        for ( i = 0 ; i < buflen ; ++i ) {
+            T[ ( i == k ? 0 : count[ buffer[ i ] ]++ ) ] = i;
+        }
+
+        // Imprime o conteudo original do vetor A
+        k = T[ k ];
+        for ( i = 0 ; i < buflen - 1; ++i ) {
+            putc( buffer[ k ], fpout );
+            k = T[ k ];
+        }
+    }
+
+    free(buffer);
+    free(T);
+  return 0;
 }
 
 int main(int argc, char const *argv[])
@@ -204,7 +265,19 @@ int main(int argc, char const *argv[])
 		
 	}else if (decode)
 	{
-		
+		//DECODE Borruos & Whelles Transformation
+		if (bwt){
+			if (txt_block > 0){
+			printf("size block text %d\n",txt_block );
+			UNBWT(txt_block, name_input, name_output);
+			}else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
+		}//unHuffman
+		if (hf){
+			/* UnHuffman(); */
+		}//UNDO Run Length
+		if (rl){
+			/* UNDO Run Length();*/
+		}
 	}
 
 	return 0;
