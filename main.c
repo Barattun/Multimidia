@@ -321,6 +321,33 @@ void CallHuffman(char *name_input, char *name_output)
     fclose(outputFl);
 }
 
+void CallUnHuffman(char *name_input, char *name_output)
+{
+    int c;
+    FILE *inputFl = NULL, *outputFl = NULL;
+    HuffStruct *encoder = Huff_Initialize_Adaptive_Encoder(257);
+    
+    if(encoder == NULL) {
+        abort();
+    }
+
+    if ((inputFl = fopen(name_input,"rb")) == NULL)
+    {
+        printf("\nErro ao abrir o arquivo entrada\n");
+        exit(1);
+    }
+    if ((outputFl=fopen(name_output, "wb")) == NULL)
+    {
+        printf("\nErro ao abrir o arquivo saida\n");
+        exit(1);
+    }
+
+    while((c = fgetc(inputFl)) != EOF && !read_byte(encoder, outputFl, c)){ }
+
+    fclose(inputFl);
+    fclose(outputFl);
+}
+
 int main(int argc, char const *argv[])
 {
 	char *name_input, *name_output; 
@@ -356,6 +383,11 @@ int main(int argc, char const *argv[])
 		if (hf){
 			/* Huffman(); */
 			CallHuffman(name_input, name_output);
+            //Para Testes do UnHuffman
+            free(name_input);
+            name_input=(char*)malloc(35*sizeof(char));
+            strcpy(name_input, "arquivoHuffmanDescomprimido.txt");
+            CallUnHuffman(name_output, name_input);
 
 		}//Run Length
 		if (rl){
@@ -372,6 +404,7 @@ int main(int argc, char const *argv[])
 		}//unHuffman
 		if (hf){
 			/* UnHuffman(); */
+            //CallUnHuffman(name_input, name_output);
 		}//UNDO Run Length
 		if (rl){
 			/* UNDO Run Length();*/
