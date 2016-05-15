@@ -30,7 +30,7 @@ main: libhuff.a main.o
 #	$(CC) $(CFLAGS) -o $@ unbwt.c
 
 clean:
-	rm -f core *.o huffman unhuffman mtf unmtf bwt unbwt libhuff.a
+	rm -f core *.o huffman unhuffman mtf unmtf bwt unbwt libhuff.a main
 
 depend:
 	makedepend *.c
