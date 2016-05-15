@@ -337,7 +337,7 @@ void UndoHuffman(char *name_input, char *name_output)
         printf("\nErro ao abrir o arquivo entrada\n");
         exit(1);
     }
-    if ((outputFl=fopen(name_output, "wb")) == NULL)
+    if ((outputFl=fopen("saidaHuffman.txt", "wb+")) == NULL)
     {
         printf("\nErro ao abrir o arquivo saida\n");
         exit(1);
@@ -351,22 +351,29 @@ void UndoHuffman(char *name_input, char *name_output)
 
 void RunLength(char *name_input, char *name_output){
      FILE *fpinput = fopen(name_input,"rb");
+     if (!fpinput){
+       printf("ERRO AO ABRIR ARQUIVO ENTRADA\n");
+     }
      FILE *fpoutput = fopen(name_output,"wb");
-
-     unsigned char anterior, letra;                  //le oprimeiro caracter
-     anterior = fgetc(fpinput);                  //le oprimeiro caracter
-     
+     if (!fpoutput){
+       printf("ERRO AO ABRIR ARQUIVO SAIDA\n");
+     }
+     unsigned char anterior, letra, c = 64;                  //le oprimeiro caracter
+                       //le oprimeiro caracter
      unsigned int cont = 1;                                      //inicia o contador pois ja foi lido um caracter
-     while(anterior != EOF)                                          //enquanto conseguir ler o arquivo( not eof)
-     {
+                                               //enquanto conseguir ler o arquivo( not eof)
+     do{
+          anterior = fgetc(fpinput);
+          printf("%c\n",anterior );
           letra = fgetc(fpinput);                 //a variavel letra recebe o segundo caracter             
          if(letra == anterior)                         // compara os caracteres lidos
              cont++;                                   //se forem iguais acresse o contador
          else
          {
              if(cont > 1)                              //se forem diferentes deve-se colocar no arq de saida
-             {                                         //o marcador
-                     putc('@',fpoutput);
+             {            
+                                          //o marcador
+                     putc(c,fpoutput);
                      fwrite((char *)&count, sizeof(unsigned int),1, fpoutput);
                      //zip.write(( char* )&cont, sizeof(int)); // escreve no arquivo o valor contido no contador
              }      
@@ -382,7 +389,8 @@ void RunLength(char *name_input, char *name_output){
 void UndoRunlength(char *name_input, char *name_output) /* esta rotina ainda nao foi implementada */
 {
      FILE *fpinput = fopen(name_input,"rb");
-     FILE *fpoutput = fopen(name_output,"wb");
+     //FILE *fpoutput = fopen(name_output,"wb");
+     FILE *fpoutput = fopen("saidaRunlgth.txt","wb+");
      int numero;
      unsigned char letra = fgetc(fpinput);
      unsigned int cont = 1;
@@ -430,40 +438,41 @@ int main(int argc, char const *argv[])
   printf("rl %d\n",rl );
   printf("Hi World =)\n");
 
-  if (encode){
-    //Borruos & Whelles Transformation
+  if (encode){//BWT OKS
     if (bwt){
       if (txt_block > 0){
       BWT(txt_block, name_input, name_output);
-      UNBWT(txt_block, name_output, name_output);
-      printf("ok\n");
+      //UNBWT(txt_block, name_output, name_output);
       }else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
-    }//Huffman
+    }//huffman OKS
     if (hf){
-      /* Huffman(); */
-      CallHuffman(name_input, name_output);
-      UndoHuffman(name_input, name_output);
+      //CallHuffman(name_input, name_output);
+      //UndoHuffman(name_output, name_output);
     }//Run Length
     if (rl){
-      //RunLength(name_input, name_output); 
+     printf("printf MAROTOO\n");
+      RunLength(name_output, "saidaRle.bin"); 
+     // UndoRunlength(name_output, name_output);
     }
     
   }else if (decode)
-  {
+  { //UNDO Run Length
+    if (rl){
+      /* UNDO Run Length();*/
+      UndoRunlength(name_input, name_output);
+    }
+    if (hf){
+      /* UnHuffman(); */
+      //CallUnHuffman(name_input, name_output);
+    }
     //DECODE Borruos & Whelles Transformation
     if (bwt){
       if (txt_block > 0){
       printf("size block text %d\n",txt_block );
       }else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
     }//unHuffman
-    if (hf){
-      /* UnHuffman(); */
-      //CallUnHuffman(name_input, name_output);
-    }//UNDO Run Length
-    if (rl){
-      /* UNDO Run Length();*/
-      UndoRunlength(name_input, name_output);
-    }
+    
+
   }
 
   return 0;
