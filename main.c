@@ -442,7 +442,7 @@ int main(int argc, char const *argv[])
     if (hf){
       /* Huffman(); */
       CallHuffman(name_input, name_output);
-      UndoHuffman(name_input, name_output);
+      
     }//Run Length
     if (rl){
       //RunLength(name_input, name_output); 
@@ -459,6 +459,7 @@ int main(int argc, char const *argv[])
     if (hf){
       /* UnHuffman(); */
       //CallUnHuffman(name_input, name_output);
+      UndoHuffman(name_input, name_output);
     }//UNDO Run Length
     if (rl){
       /* UNDO Run Length();*/
