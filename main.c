@@ -9,6 +9,9 @@
 #include <ctype.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/param.h>
+#include "huff.h"
+
 
 #define FALSE 0
 #define TRUE 1
@@ -247,6 +250,78 @@ int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
   return 0;
 }
 
+static inline int read_byte(HuffStruct *decoder, FILE* out, unsigned int c)
+{
+    int i = 0;
+    unsigned int shift = 1;
+    int val;
+
+    for(; i < 8; i += 1) {
+        Bit b = (c & shift) && 1;
+        val = Huff_Decode_Bit(decoder, b);
+
+        if(val) {
+            int decode = Huff_Decode_Data(decoder);
+            if(decode == 256)
+                return 1;
+            fputc(decode, out);
+        }
+        shift <<= 1;
+    }
+    return 0;
+}
+
+static inline void write_byte(HuffStruct *encoder, FILE* out, int c)
+{
+    int bits, i;
+    static unsigned char data = 0, mask = 1;
+    bits = Huff_Encode_Data(encoder, c);
+    for(i = 0; i < bits; i += 1) {
+        if(Huff_Get_Encoded_Bit(encoder))
+            data |= mask;
+
+
+        if(mask == 0x80) {
+            fputc(data, out);
+            mask = 1;
+            data = 0;
+        } else {
+            mask <<= 1;
+        }
+    }
+}
+
+void CallHuffman(char *name_input, char *name_output)
+{
+    int c;
+    FILE *inputFl = NULL, *outputFl = NULL;
+    HuffStruct *encoder = Huff_Initialize_Adaptive_Encoder(257);
+
+    if(encoder == NULL) {
+        abort( );
+    }
+
+    if ((inputFl = fopen(*name_input,"r")) == NULL)
+    {
+        printf("\nErro ao abrir o arquivo\n");
+        exit(1);
+    }
+    if ((outputFl=fopen(*name_output, "w")) == NULL)
+    {
+        printf("\nErro ao abrir o arquivo\n");
+        exit(1);
+    }
+
+    while((c = fgetc(inputFl)) != EOF) {
+        write_byte(encoder, outputFl, c);
+    }
+
+    write_byte(encoder, outputFl, 256);
+
+    fclose(inputFl);
+    fclose(outputFl);
+}
+
 int main(int argc, char const *argv[])
 {
 	char *name_input, *name_output; 
@@ -280,6 +355,8 @@ int main(int argc, char const *argv[])
 		}//Huffman
 		if (hf){
 			/* Huffman(); */
+			CallHuffman(name_input, name_output);
+
 		}//Run Length
 		if (rl){
 			/* Run Length();*/
