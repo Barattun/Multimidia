@@ -383,9 +383,9 @@ void UndoRunlength(char *name_input, char *name_output) /* esta rotina ainda nao
 {
      FILE *fpinput = fopen(name_input,"rb");
      FILE *fpoutput = fopen(name_output,"wb");
-     int numero;
+     int numero, i;
      unsigned char letra = fgetc(fpinput);
-     unsigned int cont = 1;
+     //unsigned int cont = 1;
      while(letra != EOF)
      {
          if(letra == '@')
@@ -393,7 +393,7 @@ void UndoRunlength(char *name_input, char *name_output) /* esta rotina ainda nao
              //arq.read((char *)&numero, sizeof(int));//(int)arq.get();
              fread((char *)&numero, 1, sizeof(int),fpinput);
              letra = fgetc(fpinput);
-             for(int i=0; i < numero; i++)
+             for(i=0; i < numero; i++)
              {
                  putc(letra, fpoutput);
              }
