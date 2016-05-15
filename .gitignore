@@ -1,6 +1,3 @@
 main
-huff.c
-huff.h
 huffman.c
-Makefile
 unhuffman.c
