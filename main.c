@@ -246,7 +246,7 @@ int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
     }
 
     /*Posicionando o ponteiro no arquivo após o cabeçalho*/
-    fseek(inputFl, sizeof(CABECALHO), SEEK_SET);
+    fseek(fpin, sizeof(CABECALHO), SEEK_SET);
 
     while ( 42 )
     {
@@ -348,7 +348,7 @@ static inline void write_byte(HuffStruct *encoder, FILE* out, int c)
     }
 }
 
-void CallHuffman(char *name_input, char *name_output)
+void CallHuffman(char *name_input, char *name_output, CABECALHO *label)
 {
     int c;
     FILE *inputFl = NULL, *outputFl = NULL;
@@ -413,7 +413,7 @@ void UndoHuffman(char *name_input, char *name_output)
     fclose(outputFl);
 }
 
-void RunLength(char *name_input, char *name_output)
+void RunLength(char *name_input, char *name_output, CABECALHO *label)
 {
     FILE *fpinput = fopen(name_input,"rb");
     FILE *fpoutput = fopen(name_output,"wb");
@@ -473,9 +473,27 @@ void UndoRunlength(char *name_input, char *name_output) /* esta rotina ainda nao
     fclose(fpoutput);
     fclose(fpinput);
 }
+
+char *ConcatenaComandoMove(char *name_output)
+{
+    char *str=NULL;
+    char mv[]= "mv ", auxiliar[]= " arquivoAuxiliar.bin";
+    int tamanho;
+
+    tamanho = strlen(name_output);
+
+    str=(char*)malloc((tamanho + 3 + 23)*sizeof(char));
+
+    strcpy(str, mv);
+    strcat(str, name_output);
+    strcat(str, auxiliar);
+
+    return str;
+}
+
 int main(int argc, char const *argv[])
 {
-    char *name_input, *name_output;
+    char *name_input, *name_output, *str;
     int encode = FALSE, decode = FALSE;
     int bwt = FALSE, txt_block = FALSE, hf = FALSE, rl = FALSE;
     FILE *AuxiliarArq = NULL;
@@ -497,6 +515,9 @@ int main(int argc, char const *argv[])
     printf("rl %d\n",rl );
     printf("Hi World =)\n");
 
+    /*Auxiliar para executar comandos no terminal*/
+    str=ConcatenaComandoMove(name_output);
+
     if (encode)
     {
         //Borruos & Whelles Transformation
@@ -504,7 +525,7 @@ int main(int argc, char const *argv[])
         {
             if (txt_block > 0)
             {
-                BWT(txt_block, name_input, name_output);
+                BWT(txt_block, name_input, name_output, label);
 
                 printf("ok\n");
             }
@@ -514,25 +535,25 @@ int main(int argc, char const *argv[])
         {
             if (bwt)
             {
-                system("mv " name_output " arquivoAuxiliar.bin");
+                system(str);
                 free(name_input);
                 name_input=(char*)malloc(22*sizeof(char));
                 strcpy(name_input, "arquivoAuxiliar.bin");
             }
             /* Huffman(); */
-            CallHuffman(name_input, name_output);
+            CallHuffman(name_input, name_output, label);
 
         }//Run Length
         if (rl)
         {
             if (bwt || hf)
             {
-                system("mv " name_output " arquivoAuxiliar.bin");
+                system(str);
                 free(name_input);
                 name_input=(char*)malloc(22*sizeof(char));
                 strcpy(name_input, "arquivoAuxiliar.bin");
             }
-            //RunLength(name_input, name_output);
+            //RunLength(name_input, name_output, label);
         }
 
         if (hf || rl)
@@ -563,7 +584,7 @@ int main(int argc, char const *argv[])
         {
             if (label->runlength)
             {
-                system("mv " name_output " arquivoAuxiliar.bin");
+                system(str);
                 free(name_input);
                 name_input=(char*)malloc(22*sizeof(char));
                 strcpy(name_input, "arquivoAuxiliar.bin");
@@ -587,7 +608,7 @@ int main(int argc, char const *argv[])
                 printf("size block text %d\n", label->bloco_size );
                 if (label->runlength || label->huffman)
                 {
-                    system("mv " name_output " arquivoAuxiliar.bin");
+                    system(str);
                     free(name_input);
                     name_input=(char*)malloc(22*sizeof(char));
                     strcpy(name_input, "arquivoAuxiliar.bin");
@@ -614,6 +635,7 @@ int main(int argc, char const *argv[])
     free(label);
     free(name_input);
     free(name_output);
+    free(str);
 
     return 0;
 }
