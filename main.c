@@ -124,7 +124,7 @@ int compare( const unsigned int *i1, const unsigned int *i2)
     int result = memcmp( buffer + *i1, buffer + *i2, l1 < l2 ? l1 : l2 );
     return ( result == 0 ? l1 - l2 : result );
 }
-int BWT( int TAM_BLOCO,char *name_input, char *name_output)
+int BWT( int TAM_BLOCO,char *name_input, char *name_output, CABECALHO *label)
 {
     // Tamanho do ultimo bloco lido
     //unsigned int length;
@@ -149,6 +149,10 @@ int BWT( int TAM_BLOCO,char *name_input, char *name_output)
         printf("ERRO AO CRIAR O ARQUIVO DE SAIDA "
            " \nconfira se o mesmo existe no diretorio do codigo\n");
     }
+
+    /*Escrevendo o cabeçalho*/
+    fwrite(label, sizeof(CABECALHO), 1, fpout);
+
     while( 42 ) {
    // do {
         // Le o bloco de dados da entrada padrao
@@ -200,7 +204,9 @@ int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
     {
       printf("ERRO\n");
     }
-        
+    
+    /*Posicionando o ponteiro no arquivo após o cabeçalho*/
+    fseek(inputFl, sizeof(CABECALHO), SEEK_SET);    
 
     while ( 42 ) {
         if( fread( ( char * )&buflen, sizeof( unsigned int ), 1, fpin ) == 0 )
@@ -312,6 +318,8 @@ void CallHuffman(char *name_input, char *name_output)
         exit(1);
     }
 
+    fwrite(label, sizeof(CABECALHO), 1, outputFl);
+
     while((c = fgetc(inputFl)) != EOF) {
         write_byte(encoder, outputFl, c);
     }
@@ -342,6 +350,9 @@ void UndoHuffman(char *name_input, char *name_output)
         printf("\nErro ao abrir o arquivo saida\n");
         exit(1);
     }
+
+    //Posicionando o ponteiro no arquivo após o cabeçalho
+    fseek(inputFl, sizeof(CABECALHO), SEEK_SET);
 
     while((c = fgetc(inputFl)) != EOF && !read_byte(encoder, outputFl, c)){ }
 
@@ -440,6 +451,10 @@ int main(int argc, char const *argv[])
       }else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
     }//Huffman
     if (hf){
+      if (bwt)
+      {
+        
+      }
       /* Huffman(); */
       CallHuffman(name_input, name_output);
       
@@ -458,7 +473,7 @@ int main(int argc, char const *argv[])
     }//unHuffman
     if (hf){
       /* UnHuffman(); */
-      //CallUnHuffman(name_input, name_output);
+      
       UndoHuffman(name_input, name_output);
     }//UNDO Run Length
     if (rl){
