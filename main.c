@@ -23,6 +23,14 @@ unsigned int *T;
 unsigned int buflen;
 unsigned int *count;
 
+typedef struct title CABECALHO;
+struct title{
+	int bloco_size;
+	int bwt;
+	int huffman;
+	int runlength;
+};
+
 int label_compare(char *str1, char *str2) {
 /*Funcao compara strings */
 	int i= 0, check = TRUE;
@@ -124,7 +132,6 @@ int BWT( int TAM_BLOCO,char *name_input, char *name_output)
 
     FILE *fpin  = NULL;
     FILE *fpout = NULL;
-    printf("name input %s %d\n",name_input,(int)strlen(name_input) );
     fpin = fopen("caso.txt","rb+");
     if (!fpin)
     {
@@ -195,7 +202,7 @@ int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
         if( fread( ( char * )&buflen, sizeof( unsigned int ), 1, fpin ) == 0 )
             break;
         //printf("AQUII %c %d\n", );
-        if ( fread( ( char * )buffer, 1, buflen, fpin ) != buflen ) printf("AQQQQQQQQQQQQQQQ\n");
+        if ( fread( ( char * )buffer, 1, buflen, fpin ) != buflen );
             //abort( );
         // Le o indice da linha original
         fread( ( char * )&k, sizeof( unsigned int ), 1, fpin );
@@ -245,15 +252,20 @@ int main(int argc, char const *argv[])
 	char *name_input, *name_output; 
 	int encode = FALSE, decode = FALSE; 
 	int bwt = FALSE, txt_block = FALSE, hf = FALSE, rl = FALSE;
+	CABECALHO *label = (CABECALHO*)malloc(sizeof(CABECALHO));
 	
 	readLine(&encode, &decode, &name_input, &name_output, &bwt, &txt_block, &hf, &rl);
+	label->bloco_size = txt_block;
+	label->bwt = bwt;
+	label->huffman = hf;
+	label->runlength = rl;
 
 	printf("encode %d\n",encode );
 	printf("decode %d\n",decode );
 	printf("%s\n",name_input);
 	printf("%s\n",name_output);
 	printf("bwt %d\n",bwt );
-	printf("txtblck %d\n",txt_block);
+	printf("txtblck %d\n",label->bloco_size);
 	printf("hf %d\n", hf);
 	printf("rl %d\n",rl );
 	printf("Hi World =)\n");
@@ -262,9 +274,7 @@ int main(int argc, char const *argv[])
 		//Borruos & Whelles Transformation
 		if (bwt){
 			if (txt_block > 0){
-			printf("size block text %d\n",txt_block );
 			BWT(txt_block, name_input, name_output);
-			printf("OKKK\n");
 			UNBWT(txt_block, name_output, name_output);
 			}else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
 		}//Huffman
