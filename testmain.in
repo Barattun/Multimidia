@@ -1,1 +1,1 @@
-encode -i caso.txt -o arquivoHuffman.bin --bwt=0 --txtblck=50 --huffman=1 --runl=0.
+encode -i caso.txt -o arquivoHuffman.bin --bwt=1 --txtblck=50 --huffman=1 --runl=0.

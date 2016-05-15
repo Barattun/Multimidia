@@ -60,6 +60,7 @@ char *copyString(char *buffer, int size){
   }
   return source;
 }
+
 int readLine(int *encode, int *decode, char **name_input, char **name_output, int *btw, 
   int *txt, int *hf, int *rl)
 {
@@ -77,7 +78,6 @@ int readLine(int *encode, int *decode, char **name_input, char **name_output, in
       {
         buffer[count] = '\0';
         comand = copyString(buffer, count);
-        printf("COMAND %s\n",comand );
         if (label_compare(comand, "-i"))
         {
           i = 0;
@@ -86,7 +86,7 @@ int readLine(int *encode, int *decode, char **name_input, char **name_output, in
             name[i] = character;
             i++;
           }while(character != SPACE);
-          name[i] = '\0';
+          name[i-1] = '\0';
           *name_input = copyString (name, i);}
         if (label_compare(comand, "-o"))
         {
@@ -96,13 +96,13 @@ int readLine(int *encode, int *decode, char **name_input, char **name_output, in
             name[i] = character;
             i++;
           }while(character != SPACE);
-          name[i] = '\0';
+          name[i-1] = '\0';
           *name_output = copyString(name, i);}
         if (label_compare(comand,"encode"))  {*encode = TRUE;}
         if (label_compare(comand,"decode"))  {*decode = TRUE;}
         if (label_compare(comand,"--bwt"))    {scanf("%d", btw);}
         if (label_compare(comand,"--txtblck")){scanf("%d", txt);}
-        if (label_compare(comand,"--huffman")){scanf("%d", hf), printf("%d\n",*hf );}
+        if (label_compare(comand,"--huffman")){scanf("%d", hf); }
         if (label_compare(comand,"--runl"))   {scanf("%d", rl);}
         free(comand);
         count = 0;
@@ -136,14 +136,14 @@ int BWT( int TAM_BLOCO,char *name_input, char *name_output)
 
     FILE *fpin  = NULL;
     FILE *fpout = NULL;
-    fpin = fopen("caso.txt","rb+");
+    fpin = fopen(name_input,"rb+");
     if (!fpin)
     {
         printf("ERRO AO ABRIR O ARQUIVO DE ENTRADA" 
             "\nconfira se o mesmo existe no diretorio do codigo\n");
         exit(1);
     }
-    fpout = fopen("arquivo.bin","wb+");
+    fpout = fopen(name_output,"wb+");
     if (!fpout)
     {
         printf("ERRO AO CRIAR O ARQUIVO DE SAIDA "
@@ -414,7 +414,7 @@ int main(int argc, char const *argv[])
     }//Huffman
     if (hf){
       /* Huffman(); */
-      //CallHuffman(name_input, name_output);
+      CallHuffman(name_input, name_output);
 
     }//Run Length
     if (rl){
