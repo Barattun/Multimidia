@@ -322,7 +322,7 @@ void CallHuffman(char *name_input, char *name_output)
     fclose(outputFl);
 }
 
-void CallUnHuffman(char *name_input, char *name_output)
+void UndoHuffman(char *name_input, char *name_output)
 {
     int c;
     FILE *inputFl = NULL, *outputFl = NULL;
@@ -442,18 +442,10 @@ int main(int argc, char const *argv[])
     if (hf){
       /* Huffman(); */
       CallHuffman(name_input, name_output);
-<<<<<<< HEAD
-=======
-      //Para Testes do UnHuffman
-      free(name_input);
-      name_input=(char*)malloc(35*sizeof(char));
-      strcpy(name_input, "arquivoHuffmanDescomprimido.txt");
-      CallUnHuffman(name_output, name_input);
->>>>>>> 64662bbc06ca543bd4f10d8bdaf403f878236f3d
-
+      UndoHuffman(name_input, name_output);
     }//Run Length
     if (rl){
-      RunLength(name_input, name_output); 
+      //RunLength(name_input, name_output); 
     }
     
   }else if (decode)
