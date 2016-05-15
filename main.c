@@ -1,7 +1,7 @@
 /*
 *TRABALHO MULTIMIDIA
 *
-*	AUTHOR: WERIK AMARAL FACHIM
+* AUTHOR: WERIK AMARAL FACHIM
 * 
  */
 #include <stdlib.h>
@@ -28,94 +28,94 @@ unsigned int *count;
 
 typedef struct title CABECALHO;
 struct title{
-	int bloco_size;
-	int bwt;
-	int huffman;
-	int runlength;
+  int bloco_size;
+  int bwt;
+  int huffman;
+  int runlength;
 };
 
 int label_compare(char *str1, char *str2) {
 /*Funcao compara strings */
-	int i= 0, check = TRUE;
-	while(str1[i]!='\0' && str2[i]!='\0'){
-		if (str1[i] != str2[i]){
-			check = FALSE;
-			break;
-		}
-		i++;
-	}
-	return check;
+  int i= 0, check = TRUE;
+  while(str1[i]!='\0' && str2[i]!='\0'){
+    if (str1[i] != str2[i]){
+      check = FALSE;
+      break;
+    }
+    i++;
+  }
+  return check;
 }
 char *copyString(char *buffer, int size){
-	int i;
-	char *source = (char*) malloc(sizeof(char)*size);
-	if (buffer[0] == 32){
-		for (i = 0; i < size; i++){
-			source[i] = buffer[i+1];
-		}
-	}else{
-		for (i = 0; i < 25; i++){
-			source[i] = buffer[i];
-		}
-	}
-	return source;
+  int i;
+  char *source = (char*) malloc(sizeof(char)*size);
+  if (buffer[0] == 32){
+    for (i = 0; i < size; i++){
+      source[i] = buffer[i+1];
+    }
+  }else{
+    for (i = 0; i < 25; i++){
+      source[i] = buffer[i];
+    }
+  }
+  return source;
 }
 int readLine(int *encode, int *decode, char **name_input, char **name_output, int *btw, 
-	int *txt, int *hf, int *rl)
+  int *txt, int *hf, int *rl)
 {
-	int i, count = 0;	
-	char character;
-	char name[25], *comand = NULL;
-	char *buffer = NULL;
-	
-	do{
-		buffer = (char *) realloc(buffer, sizeof(char) * (count+1));
-		character = fgetc(stdin);
-		if (character == SPACE || character == EQUALS 	|| character == DOT)
-		{	
-			if (count > 0)
-			{
-				buffer[count] = '\0';
-				comand = copyString(buffer, count);
-				printf("COMAND %s\n",comand );
-				if (label_compare(comand, "-i"))
-				{
-					i = 0;
-					do{
-						character=fgetc(stdin);
-						name[i] = character;
-						i++;
-					}while(character != SPACE);
-					name[i] = '\0';
-					*name_input = copyString (name, i);}
-				if (label_compare(comand, "-o"))
-				{
-					i = 0;
-					do{
-						character=fgetc(stdin);
-						name[i] = character;
-						i++;
-					}while(character != SPACE);
-					name[i] = '\0';
-					*name_output = copyString(name, i);}
-				if (label_compare(comand,"encode"))  {*encode = TRUE;}
-				if (label_compare(comand,"decode"))  {*decode = TRUE;}
-				if (label_compare(comand,"--bwt"))    {scanf("%d", btw);}
-				if (label_compare(comand,"--txtblck")){scanf("%d", txt);}
-				if (label_compare(comand,"--huffman")){scanf("%d", hf), printf("%d\n",*hf );}
-				if (label_compare(comand,"--runl"))   {scanf("%d", rl);}
-				free(comand);
-				count = 0;
-			}
-		}
-		else
-		{	
-			buffer[count] = character;
-			++count;
-		}
-	}while(!feof(stdin));
-	free(buffer);
-	return 0;
+  int i, count = 0; 
+  char character;
+  char name[25], *comand = NULL;
+  char *buffer = NULL;
+  
+  do{
+    buffer = (char *) realloc(buffer, sizeof(char) * (count+1));
+    character = fgetc(stdin);
+    if (character == SPACE || character == EQUALS   || character == DOT)
+    { 
+      if (count > 0)
+      {
+        buffer[count] = '\0';
+        comand = copyString(buffer, count);
+        printf("COMAND %s\n",comand );
+        if (label_compare(comand, "-i"))
+        {
+          i = 0;
+          do{
+            character=fgetc(stdin);
+            name[i] = character;
+            i++;
+          }while(character != SPACE);
+          name[i] = '\0';
+          *name_input = copyString (name, i);}
+        if (label_compare(comand, "-o"))
+        {
+          i = 0;
+          do{
+            character=fgetc(stdin);
+            name[i] = character;
+            i++;
+          }while(character != SPACE);
+          name[i] = '\0';
+          *name_output = copyString(name, i);}
+        if (label_compare(comand,"encode"))  {*encode = TRUE;}
+        if (label_compare(comand,"decode"))  {*decode = TRUE;}
+        if (label_compare(comand,"--bwt"))    {scanf("%d", btw);}
+        if (label_compare(comand,"--txtblck")){scanf("%d", txt);}
+        if (label_compare(comand,"--huffman")){scanf("%d", hf), printf("%d\n",*hf );}
+        if (label_compare(comand,"--runl"))   {scanf("%d", rl);}
+        free(comand);
+        count = 0;
+      }
+    }
+    else
+    { 
+      buffer[count] = character;
+      ++count;
+    }
+  }while(!feof(stdin));
+  free(buffer);
+  return 0;
 }
 int compare( const unsigned int *i1, const unsigned int *i2)
 {
@@ -198,7 +198,7 @@ int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
     fpout = fopen("saida.txt","wb");
     if (!fpin || !fpout)
     {
-    	printf("ERRO\n");
+      printf("ERRO\n");
     }
         
 
@@ -382,61 +382,61 @@ void UndoRunlength(char *name_input, char *name_output) /* esta rotina ainda nao
 }
 int main(int argc, char const *argv[])
 {
-	char *name_input, *name_output; 
-	int encode = FALSE, decode = FALSE; 
-	int bwt = FALSE, txt_block = FALSE, hf = FALSE, rl = FALSE;
-	CABECALHO *label = (CABECALHO*)malloc(sizeof(CABECALHO));
-	
-	readLine(&encode, &decode, &name_input, &name_output, &bwt, &txt_block, &hf, &rl);
-	label->bloco_size = txt_block;
-	label->bwt = bwt;
-	label->huffman = hf;
-	label->runlength = rl;
+  char *name_input, *name_output; 
+  int encode = FALSE, decode = FALSE; 
+  int bwt = FALSE, txt_block = FALSE, hf = FALSE, rl = FALSE;
+  CABECALHO *label = (CABECALHO*)malloc(sizeof(CABECALHO));
+  
+  readLine(&encode, &decode, &name_input, &name_output, &bwt, &txt_block, &hf, &rl);
+  label->bloco_size = txt_block;
+  label->bwt = bwt;
+  label->huffman = hf;
+  label->runlength = rl;
 
-	printf("encode %d\n",encode );
-	printf("decode %d\n",decode );
-	printf("%s\n",name_input);
-	printf("%s\n",name_output);
-	printf("bwt %d\n",bwt );
-	printf("txtblck %d\n",label->bloco_size);
-	printf("hf %d\n", hf);
-	printf("rl %d\n",rl );
-	printf("Hi World =)\n");
+  printf("encode %d\n",encode );
+  printf("decode %d\n",decode );
+  printf("%s\n",name_input);
+  printf("%s\n",name_output);
+  printf("bwt %d\n",bwt );
+  printf("txtblck %d\n",label->bloco_size);
+  printf("hf %d\n", hf);
+  printf("rl %d\n",rl );
+  printf("Hi World =)\n");
 
-	if (encode){
-		//Borruos & Whelles Transformation
-		if (bwt){
-			if (txt_block > 0){
-			BWT(txt_block, name_input, name_output);
-			UNBWT(txt_block, name_output, name_output);
-			printf("ok\n");
-			}else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
-		}//Huffman
-		if (hf){
-			/* Huffman(); */
-			//CallHuffman(name_input, name_output);
+  if (encode){
+    //Borruos & Whelles Transformation
+    if (bwt){
+      if (txt_block > 0){
+      BWT(txt_block, name_input, name_output);
+      UNBWT(txt_block, name_output, name_output);
+      printf("ok\n");
+      }else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
+    }//Huffman
+    if (hf){
+      /* Huffman(); */
+      //CallHuffman(name_input, name_output);
 
-		}//Run Length
-		if (rl){
-			RunLength(name_input, name_output);	
-		}
-		
-	}else if (decode)
-	{
-		//DECODE Borruos & Whelles Transformation
-		if (bwt){
-			if (txt_block > 0){
-			printf("size block text %d\n",txt_block );
-			}else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
-		}//unHuffman
-		if (hf){
-			/* UnHuffman(); */
-		}//UNDO Run Length
-		if (rl){
-			/* UNDO Run Length();*/
-			UndoRunlength(name_input, name_output);
-		}
-	}
+    }//Run Length
+    if (rl){
+      RunLength(name_input, name_output); 
+    }
+    
+  }else if (decode)
+  {
+    //DECODE Borruos & Whelles Transformation
+    if (bwt){
+      if (txt_block > 0){
+      printf("size block text %d\n",txt_block );
+      }else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
+    }//unHuffman
+    if (hf){
+      /* UnHuffman(); */
+    }//UNDO Run Length
+    if (rl){
+      /* UNDO Run Length();*/
+      UndoRunlength(name_input, name_output);
+    }
+  }
 
-	return 0;
+  return 0;
 }
