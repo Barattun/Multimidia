@@ -53,7 +53,7 @@ char *copyString(char *buffer, int size){
 		for (i = 0; i < size; i++){
 			source[i] = buffer[i+1];
 		}
-	}else {
+	}else{
 		for (i = 0; i < 25; i++){
 			source[i] = buffer[i];
 		}
@@ -85,7 +85,7 @@ int readLine(int *encode, int *decode, char **name_input, char **name_output, in
 						name[i] = character;
 						i++;
 					}while(character != SPACE);
-					name[i] = '\0';
+					name[i-1] = '\0';
 					*name_input = copyString (name, i);}
 				if (label_compare(comand, "-o"))
 				{
@@ -193,8 +193,8 @@ int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
     FILE *fpin = NULL;
     FILE *fpout = NULL;
     
-    fpin = fopen("arquivo.bin","rb");
-    fpout = fopen("saida.txt","wb");
+    fpin = fopen(name_input,"rb");
+    fpout = fopen(name_output,"wb");
     if (!fpin || !fpout)
     {
     	printf("ERRO\n");
@@ -300,15 +300,14 @@ void CallHuffman(char *name_input, char *name_output)
     if(encoder == NULL) {
         abort( );
     }
-
-    if ((inputFl = fopen(*name_input,"r")) == NULL)
+    if ((inputFl = fopen(name_input,"rb")) == NULL)
     {
-        printf("\nErro ao abrir o arquivo\n");
+        printf("\nErro ao abrir o arquivo entrada\n");
         exit(1);
     }
-    if ((outputFl=fopen(*name_output, "w")) == NULL)
+    if ((outputFl=fopen(name_output, "wb")) == NULL)
     {
-        printf("\nErro ao abrir o arquivo\n");
+        printf("\nErro ao abrir o arquivo saida\n");
         exit(1);
     }
 
@@ -351,6 +350,7 @@ int main(int argc, char const *argv[])
 			if (txt_block > 0){
 			BWT(txt_block, name_input, name_output);
 			UNBWT(txt_block, name_output, name_output);
+			printf("ok\n");
 			}else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
 		}//Huffman
 		if (hf){
