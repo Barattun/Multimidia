@@ -1,1 +1,1 @@
-encode -i caso.txt -o arquivoHuffman.bin --bwt=1 --txtblck=50 --huffman=1 --runl=1.
+decode -i SaidatTot.bin -o SaidaFinal2.txt --bwt=0 --txtblck=50 --huffman=0 --runl=0.

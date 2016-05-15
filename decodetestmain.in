@@ -1,1 +1,1 @@
-encode -i arquivoHuffman.bin -o arquivoHuffmanDescomprimido.txt
+decode -i arquivoHuffman.bin -o arquivoHuffmanDescomprimido.txt
