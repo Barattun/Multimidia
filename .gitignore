@@ -1,3 +1,6 @@
 main
 huffman.c
 unhuffman.c
+*.o
+libhuff.a
+Makefile.bak
