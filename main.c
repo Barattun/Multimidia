@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <fcntl.h>
+#include "huffman.h"
 
 #define FALSE 0
 #define TRUE 1
@@ -197,6 +198,8 @@ int main(int argc, char const *argv[])
 		}//Huffman
 		if (hf){
 			/* Huffman(); */
+			CallHuffman(name_input, name_output);
+
 		}//Run Length
 		if (rl){
 			/* Run Length();*/
