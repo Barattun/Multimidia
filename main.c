@@ -294,18 +294,18 @@ void CallHuffman(char *name_input, char *name_output)
         abort( );
     }
 
-    if (inputFl = fopen(*name_input,"r") == NULL)
+    if ((inputFl = fopen(name_input,"r")) == NULL)
     {
         printf("\nErro ao abrir o arquivo\n");
         exit(1);
     }
-    if (outputFl = fopen(*name_output, "w") == NULL)
+    if ((outputFl=fopen(name_output, "w")) == NULL)
     {
         printf("\nErro ao abrir o arquivo\n");
         exit(1);
     }
 
-    while((c = fgetc(*inputFl)) != EOF) {
+    while((c = fgetc(inputFl)) != EOF) {
         write_byte(encoder, outputFl, c);
     }
 
