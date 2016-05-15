@@ -21,7 +21,7 @@ unsigned char *buffer;
 unsigned int length;
 unsigned int *T;
 unsigned int buflen;
-unsigned int count[ 256 ];
+unsigned int *count;
 
 int label_compare(char *str1, char *str2) {
 /*Funcao compara strings */
@@ -138,8 +138,8 @@ int BWT( int TAM_BLOCO,char *name_input, char *name_output)
         printf("ERRO AO CRIAR O ARQUIVO DE SAIDA "
            " \nconfira se o mesmo existe no diretorio do codigo\n");
     }
-    //while( 42 ) {
-    do {
+    while( 42 ) {
+   // do {
         // Le o bloco de dados da entrada padrao
         length = fread( ( char * )buffer, 1, TAM_BLOCO, fpin);
         if ( length == 0 )
@@ -166,8 +166,8 @@ int BWT( int TAM_BLOCO,char *name_input, char *name_output)
             }
         }
         fwrite( ( char * )&k, sizeof( unsigned int ),1, fpout );
-    }while(length == 0);
-    //}
+    //}while(length == 0);
+    }
     fclose(fpin);
     fclose(fpout);
     return 0;
@@ -176,20 +176,27 @@ int BWT( int TAM_BLOCO,char *name_input, char *name_output)
 int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
 {
     unsigned int i, k, sum, previous;
+    buffer = (unsigned char*) malloc(sizeof(unsigned char)*(TAM_BLOCO+1));
+    T = (unsigned int*) malloc(sizeof(unsigned int)*(TAM_BLOCO+1));
+    count = (unsigned int*) malloc(sizeof(unsigned int) * 256);
+
     FILE *fpin = NULL;
     FILE *fpout = NULL;
     
-    fpin = fopen(name_input,"rb");
-    fpout = fopen(name_output,"wb");
+    fpin = fopen("arquivo.bin","rb");
+    fpout = fopen("saida.txt","wb");
+    if (!fpin || !fpout)
+    {
+    	printf("ERRO\n");
+    }
         
-    buffer = (unsigned char*) malloc(sizeof(unsigned char)*(TAM_BLOCO+1));
-    T = (unsigned int*) malloc(sizeof(unsigned int)*(TAM_BLOCO+1));
 
     while ( 42 ) {
-        if ( fread( ( char * )&buflen, sizeof( unsigned int ), 1, fpin ) == 0 )
+        if( fread( ( char * )&buflen, sizeof( unsigned int ), 1, fpin ) == 0 )
             break;
-        if ( fread( ( char * )buffer, 1, buflen, fpin ) != buflen )
-            abort( );
+        //printf("AQUII %c %d\n", );
+        if ( fread( ( char * )buffer, 1, buflen, fpin ) != buflen ) printf("AQQQQQQQQQQQQQQQ\n");
+            //abort( );
         // Le o indice da linha original
         fread( ( char * )&k, sizeof( unsigned int ), 1, fpin );
         // Obtem a primeira coluna da matriz N x N original
@@ -220,13 +227,16 @@ int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
         // Imprime o conteudo original do vetor A
         k = T[ k ];
         for ( i = 0 ; i < buflen - 1; ++i ) {
-            putc( buffer[ k ], fpout );
+            putc( buffer[ k ], fpout);
             k = T[ k ];
         }
     }
 
-    free(buffer);
+    free(count);
     free(T);
+    free(buffer);
+    fclose(fpout);
+    fclose(fpin);
   return 0;
 }
 
@@ -254,6 +264,8 @@ int main(int argc, char const *argv[])
 			if (txt_block > 0){
 			printf("size block text %d\n",txt_block );
 			BWT(txt_block, name_input, name_output);
+			printf("OKKK\n");
+			UNBWT(txt_block, name_output, name_output);
 			}else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
 		}//Huffman
 		if (hf){
@@ -269,7 +281,6 @@ int main(int argc, char const *argv[])
 		if (bwt){
 			if (txt_block > 0){
 			printf("size block text %d\n",txt_block );
-			UNBWT(txt_block, name_input, name_output);
 			}else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
 		}//unHuffman
 		if (hf){
