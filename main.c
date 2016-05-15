@@ -49,7 +49,7 @@ int label_compare(char *str1, char *str2) {
 char *copyString(char *buffer, int size){
 	int i;
 	char *source = (char*) malloc(sizeof(char)*size);
-	if (buffer[0] == ENTER){
+	if (buffer[0] == 32){
 		for (i = 0; i < size; i++){
 			source[i] = buffer[i+1];
 		}
@@ -77,6 +77,7 @@ int readLine(int *encode, int *decode, char **name_input, char **name_output, in
 			{
 				buffer[count] = '\0';
 				comand = copyString(buffer, count);
+				printf("COMAND %s\n",comand );
 				if (label_compare(comand, "-i"))
 				{
 					i = 0;
@@ -85,7 +86,7 @@ int readLine(int *encode, int *decode, char **name_input, char **name_output, in
 						name[i] = character;
 						i++;
 					}while(character != SPACE);
-					name[i-1] = '\0';
+					name[i] = '\0';
 					*name_input = copyString (name, i);}
 				if (label_compare(comand, "-o"))
 				{
@@ -101,7 +102,7 @@ int readLine(int *encode, int *decode, char **name_input, char **name_output, in
 				if (label_compare(comand,"decode"))  {*decode = TRUE;}
 				if (label_compare(comand,"--bwt"))    {scanf("%d", btw);}
 				if (label_compare(comand,"--txtblck")){scanf("%d", txt);}
-				if (label_compare(comand,"--huffman")){scanf("%d", hf);}
+				if (label_compare(comand,"--huffman")){scanf("%d", hf), printf("%d\n",*hf );}
 				if (label_compare(comand,"--runl"))   {scanf("%d", rl);}
 				free(comand);
 				count = 0;
@@ -193,8 +194,8 @@ int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
     FILE *fpin = NULL;
     FILE *fpout = NULL;
     
-    fpin = fopen(name_input,"rb");
-    fpout = fopen(name_output,"wb");
+    fpin = fopen(name_input,"rb+");
+    fpout = fopen("saida.txt","wb");
     if (!fpin || !fpout)
     {
     	printf("ERRO\n");
@@ -305,7 +306,7 @@ void CallHuffman(char *name_input, char *name_output)
         printf("\nErro ao abrir o arquivo entrada\n");
         exit(1);
     }
-    if ((outputFl=fopen(name_output, "wb")) == NULL)
+    if ((outputFl=fopen(name_output, "wb+")) == NULL)
     {
         printf("\nErro ao abrir o arquivo saida\n");
         exit(1);
@@ -321,6 +322,64 @@ void CallHuffman(char *name_input, char *name_output)
     fclose(outputFl);
 }
 
+void RunLength(char *name_input, char *name_output){
+     FILE *fpinput = fopen(name_input,"rb");
+     FILE *fpoutput = fopen(name_output,"wb");
+
+     unsigned char anterior, letra;                  //le oprimeiro caracter
+     anterior = fgetc(fpinput);                  //le oprimeiro caracter
+     
+     unsigned int cont = 1;                                      //inicia o contador pois ja foi lido um caracter
+     while(anterior != EOF)                                          //enquanto conseguir ler o arquivo( not eof)
+     {
+          letra = fgetc(fpinput);                 //a variavel letra recebe o segundo caracter             
+         if(letra == anterior)                         // compara os caracteres lidos
+             cont++;                                   //se forem iguais acresse o contador
+         else
+         {
+             if(cont > 1)                              //se forem diferentes deve-se colocar no arq de saida
+             {                                         //o marcador
+                     putc('@',fpoutput);
+                     fwrite((char *)&count, sizeof(unsigned int),1, fpoutput);
+                     //zip.write(( char* )&cont, sizeof(int)); // escreve no arquivo o valor contido no contador
+             }      
+             putc(anterior, fpoutput);                                          //que representa o quanto o caracter lido esta repetido
+             //zip.put(anterior); //escreve o caracer 
+             anterior = letra;  // altera a variavel para o proximo caracter lido
+             cont = 1; //retorna o contador para 01 pois apenas um caracter foi lido
+        }
+    }
+    fclose(fpoutput);
+    fclose(fpinput);
+}
+void UndoRunlength(char *name_input, char *name_output) /* esta rotina ainda nao foi implementada */
+{
+     FILE *fpinput = fopen(name_input,"rb");
+     FILE *fpoutput = fopen(name_output,"wb");
+     int numero;
+     unsigned char letra = fgetc(fpinput);
+     unsigned int cont = 1;
+     while(letra != EOF)
+     {
+         if(letra == '@')
+         {
+             //arq.read((char *)&numero, sizeof(int));//(int)arq.get();
+             fread((char *)&numero, 1, sizeof(int),fpinput);
+             letra = fgetc(fpinput);
+             for(int i=0; i < numero; i++)
+             {
+                 putc(letra, fpoutput);
+             }
+         }
+         else
+         {
+             putc(letra, fpoutput);
+         }
+         letra = fgetc(fpinput);
+    }
+    fclose(fpoutput);
+    fclose(fpinput);
+}
 int main(int argc, char const *argv[])
 {
 	char *name_input, *name_output; 
@@ -355,11 +414,11 @@ int main(int argc, char const *argv[])
 		}//Huffman
 		if (hf){
 			/* Huffman(); */
-			CallHuffman(name_input, name_output);
+			//CallHuffman(name_input, name_output);
 
 		}//Run Length
 		if (rl){
-			/* Run Length();*/
+			RunLength(name_input, name_output);	
 		}
 		
 	}else if (decode)
@@ -375,6 +434,7 @@ int main(int argc, char const *argv[])
 		}//UNDO Run Length
 		if (rl){
 			/* UNDO Run Length();*/
+			UndoRunlength(name_input, name_output);
 		}
 	}
 
