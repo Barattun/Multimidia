@@ -612,6 +612,8 @@ int main(int argc, char const *argv[])
     }
 
     free(label);
+    free(name_input);
+    free(name_output);
 
     return 0;
 }
