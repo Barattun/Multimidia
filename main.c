@@ -35,6 +35,197 @@ struct title
     int runlength;
 };
 
+typedef struct stream_t stream_t, *stream;
+struct stream_t {
+    /* get funciton is supposed to return a byte value (0-255),
+        or -1 to signify end of input */
+    int (*get)(stream);
+    /* put function does output, one byte at a time */
+    int (*put)(stream, int);
+};
+ 
+/* next two structs inherit from stream_t */
+typedef struct {
+    int (*get)(stream);
+    int (*put)(stream, int);
+    char *string;
+    int pos;
+} string_stream;
+ 
+typedef struct {
+    int (*get)(stream);
+    int (*put)(stream, int);
+    FILE *fp;
+} file_stream;
+ 
+/* methods for above streams */
+int sget(stream in)
+{
+    int c;
+    string_stream* s = (string_stream*) in;
+    c = (unsigned char)(s->string[s->pos]);
+    if (c == '\0') return -1;
+    s->pos++;
+    return c;
+}
+ 
+int sput(stream out, int c)
+{
+    string_stream* s = (string_stream*) out;
+    s->string[s->pos++] = (c == -1) ? '\0' : c;
+    if (c == -1) s->pos = 0;
+    return 0;
+}
+ 
+int file_put(stream out, int c)
+{
+    file_stream *f = (file_stream*) out;
+    return fputc(c, f->fp);
+}
+ 
+/* helper function */
+void output(stream out, unsigned char* buf, int len)
+{
+    int i;
+    out->put(out, 128 + len);
+    for (i = 0; i < len; i++)
+        out->put(out, buf[i]);
+}
+ 
+/* Specification: encoded stream are unsigned bytes consisting of sequences.
+ * First byte of each sequence is the length, followed by a number of bytes.
+ * If length <=128, the next byte is to be repeated length times;
+ * If length > 128, the next (length - 128) bytes are not repeated.
+ * this is to improve efficiency for long non-repeating sequences.
+ * This scheme can encode arbitrary byte values efficiently.
+ * c.f. Adobe PDF spec RLE stream encoding (not exactly the same)
+ */
+void encode(stream in, stream out)
+{
+    unsigned char buf[256];
+    int len = 0, repeat = 0, end = 0, c;
+    int (*get)(stream) = in->get;
+    int (*put)(stream, int) = out->put;
+ 
+    while (!end) {
+        end = ((c = get(in)) == -1);
+        if (!end) {
+            buf[len++] = c;
+            if (len <= 1) continue;
+        }
+ 
+        if (repeat) {
+            if (buf[len - 1] != buf[len - 2])
+                repeat = 0;
+            if (!repeat || len == 129 || end) {
+                /* write out repeating bytes */
+                put(out, end ? len : len - 1);
+                put(out, buf[0]);
+                buf[0] = buf[len - 1];
+                len = 1;
+            }
+        } else {
+            if (buf[len - 1] == buf[len - 2]) {
+                repeat = 1;
+                if (len > 2) {
+                    output(out, buf, len - 2);
+                    buf[0] = buf[1] = buf[len - 1];
+                    len = 2;
+                }
+                continue;
+            }
+            if (len == 128 || end) {
+                output(out, buf, len);
+                len = 0;
+                repeat = 0;
+            }
+        }
+    }
+    put(out, -1);
+}
+ 
+void decode(stream in, stream out)
+{
+    int c, i, cnt;
+    while (1) {
+        c = in->get(in);
+        if (c == -1) return;
+        if (c > 128) {
+            cnt = c - 128;
+            for (i = 0; i < cnt; i++)
+                out->put(out, in->get(in));
+        } else {
+            cnt = c;
+            c = in->get(in);
+            for (i = 0; i < cnt; i++)
+                out->put(out, c);
+        }
+    }
+}
+int Runlength(int flag, char *name_input, char *name_output, int *tam)
+{
+
+    FILE *fpin = fopen(name_input,"rb");
+    if (!fpin)
+        printf("ERROR\n");
+    FILE *fpaux = fopen(name_output,"wb+");
+    if (!fpaux)
+        printf("ERRO 3rd\n");
+    int i;
+    char c;
+    char *str = NULL;
+    if (flag)
+    {
+    
+        i=0;
+        do{
+            c = fgetc(fpin);
+            if(c != -1){
+                str = (char*)realloc(str,sizeof(char) * (i+1));
+                str[i] = c;
+                i++;
+            }
+        }while(!feof(fpin));
+
+        str[i] = '\0';
+        *tam = i;
+    }
+    int n;
+    if (flag)
+        n=i;
+    else
+        n=*tam;
+    char buf[n];
+
+    string_stream str_in = { sget, 0,str, 0};
+    string_stream str_out = { sget, sput, buf, 0 };
+ 
+    if (flag)
+    {
+        /* encode from str_in to str_out */
+        encode((stream)&str_in, (stream)&str_out);
+        //if(!fwrite((stream)&str_out, sizeof(stream),1,fpout))
+        if (!fwrite((stream)&str_out, sizeof(stream),1, fpaux))
+        printf("ERRROOO escrita saida rle\n");
+    }
+    
+    string_stream strAux = { sget, sput, buf, 0 };
+    file_stream file = { 0, file_put, fpaux};
+
+    if (!flag)
+    {
+        fseek(fpin, 0, SEEK_SET);
+        if(!fread((stream)&strAux, 1, sizeof(stream),fpin))
+        printf("ERRO leitura rle dcode\n");
+        /* decode from str_out to file (stdout) */
+    //decode((stream)&str_out, (stream)&file);
+        decode((stream)&strAux, (stream)&file);
+    }
+    fclose(fpaux);
+    fclose(fpin);
+    return 0;
+}
+
 int label_compare(char *str1, char *str2)
 {
     /*Funcao compara strings */
@@ -494,7 +685,7 @@ int main(int argc, char const *argv[])
 {
     char *name_input, *name_output, *str;
     int encode = FALSE, decode = FALSE;
-    int bwt = FALSE, txt_block = FALSE, hf = FALSE, rl = FALSE;
+    int tam, bwt = FALSE, txt_block = FALSE, hf = FALSE, rl = FALSE;
     FILE *AuxiliarArq = NULL;
     CABECALHO *label = (CABECALHO*)malloc(sizeof(CABECALHO));
 
@@ -503,16 +694,6 @@ int main(int argc, char const *argv[])
     label->bwt = bwt;
     label->huffman = hf;
     label->runlength = rl;
-
-    printf("encode %d\n",encode );
-    printf("decode %d\n",decode );
-    printf("%s\n",name_input);
-    printf("%s\n",name_output);
-    printf("bwt %d\n",bwt );
-    printf("txtblck %d\n",label->bloco_size);
-    printf("hf %d\n", hf);
-    printf("rl %d\n",rl );
-    printf("Hi World =)\n");
 
     /*Auxiliar para executar comandos no terminal*/
     str=ConcatenaComandoMove(name_output);
@@ -554,6 +735,7 @@ int main(int argc, char const *argv[])
                 name_input=(char*)malloc(22*sizeof(char));
                 strcpy(name_input, "arquivoAuxiliar.bin");
             }
+            Runlength(1,name_input,name_output, &tam);
             //RunLength(name_input, name_output, label);
         }
 
@@ -621,6 +803,7 @@ int main(int argc, char const *argv[])
                         exit(1);
                     }
                     fread(label, sizeof(CABECALHO), 1, AuxiliarArq);
+                    Runlength(0,name_input,name_output, &tam);
                     fclose(AuxiliarArq);
                 }
                 
