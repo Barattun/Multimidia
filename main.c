@@ -1,8 +1,6 @@
 /*
 *TRABALHO MULTIMIDIA
 *
-* AUTHOR: WERIK AMARAL FACHIM
-*
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,14 +35,13 @@ struct title
 
 typedef struct stream_t stream_t, *stream;
 struct stream_t {
-    /* get funciton is supposed to return a byte value (0-255),
-        or -1 to signify end of input */
+    
     int (*get)(stream);
-    /* put function does output, one byte at a time */
+    
     int (*put)(stream, int);
 };
  
-/* next two structs inherit from stream_t */
+
 typedef struct {
     int (*get)(stream);
     int (*put)(stream, int);
@@ -58,7 +55,7 @@ typedef struct {
     FILE *fp;
 } file_stream;
  
-/* methods for above streams */
+
 int sget(stream in)
 {
     int c;
@@ -83,7 +80,7 @@ int file_put(stream out, int c)
     return fputc(c, f->fp);
 }
  
-/* helper function */
+
 void output(stream out, unsigned char* buf, int len)
 {
     int i;
@@ -92,14 +89,7 @@ void output(stream out, unsigned char* buf, int len)
         out->put(out, buf[i]);
 }
  
-/* Specification: encoded stream are unsigned bytes consisting of sequences.
- * First byte of each sequence is the length, followed by a number of bytes.
- * If length <=128, the next byte is to be repeated length times;
- * If length > 128, the next (length - 128) bytes are not repeated.
- * this is to improve efficiency for long non-repeating sequences.
- * This scheme can encode arbitrary byte values efficiently.
- * c.f. Adobe PDF spec RLE stream encoding (not exactly the same)
- */
+
 void encode(stream in, stream out)
 {
     unsigned char buf[256];
@@ -204,7 +194,7 @@ int Runlength(int flag, char *name_input, char *name_output, int *tam)
     {
         /* encode from str_in to str_out */
         encode((stream)&str_in, (stream)&str_out);
-        //if(!fwrite((stream)&str_out, sizeof(stream),1,fpout))
+        
         if (!fwrite((stream)&str_out, sizeof(stream),1, fpaux))
         printf("ERRROOO escrita saida rle\n");
     }
@@ -217,8 +207,8 @@ int Runlength(int flag, char *name_input, char *name_output, int *tam)
         fseek(fpin, 0, SEEK_SET);
         if(!fread((stream)&strAux, 1, sizeof(stream),fpin))
         printf("ERRO leitura rle dcode\n");
-        /* decode from str_out to file (stdout) */
-    //decode((stream)&str_out, (stream)&file);
+       
+    
         decode((stream)&strAux, (stream)&file);
     }
     fclose(fpaux);
@@ -442,16 +432,12 @@ int UNBWT(int TAM_BLOCO,char *name_input, char *name_output)
     {
         if( fread( ( char * )&buflen, sizeof( unsigned int ), 1, fpin ) == 0 )
             break;
-        //printf("AQUII %c %d\n", );
+        
         if ( fread( ( char * )buffer, 1, buflen, fpin ) != buflen );
-        //abort( );
-        // Le o indice da linha original
+        
+        
         fread( ( char * )&k, sizeof( unsigned int ), 1, fpin );
-        // Obtem a primeira coluna da matriz N x N original
-        // Para isso, roda uma versao modificada do Counting Sort
-        // que apenas guarda o numero de ocorrencias menores ou iguais ao caracter
-        // Deve-se lembrar de tratar o caracter EOF, considerado menor
-        // que qualquer outro caracter.
+        
         for ( i = 0; i < 256 ; ++i )
             count[ i ] = 0;
 
@@ -736,7 +722,7 @@ int main(int argc, char const *argv[])
                 strcpy(name_input, "arquivoAuxiliar.bin");
             }
             Runlength(1,name_input,name_output, &tam);
-            //RunLength(name_input, name_output, label);
+            
         }
 
         if (hf || rl)
@@ -760,7 +746,7 @@ int main(int argc, char const *argv[])
         if (label->runlength)
         {
             /* UNDO Run Length();*/
-            UndoRunlength(name_input, name_output);
+            Runlength(0,name_input,name_output, &tam);
         }
 
         //unHuffman
@@ -803,7 +789,7 @@ int main(int argc, char const *argv[])
                         exit(1);
                     }
                     fread(label, sizeof(CABECALHO), 1, AuxiliarArq);
-                    Runlength(0,name_input,name_output, &tam);
+                    
                     fclose(AuxiliarArq);
                 }
                 

@@ -1,7 +1,3 @@
-/* -*-Mode: C;-*- */
-/* $Id: huff.c 1.1.1.1 Mon, 17 Jun 1996 18:47:03 -0700 jmacd $	*/
-/* huff.c: A library for adaptive huffman encoding and decoding. */
-
 #include <sys/param.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -52,11 +48,7 @@ static int Huff_Read_Stats(HuffStruct *H,
 			   int AlphabetSize,
 			   const char* filename);
 
-/* Huff_Initialize_Adaptive_Encoder()
- *
- * returns an initialized Huffman encoder for an alphabet with the
- * given size.  returns NULL if enough memory cannot be allocated
- */
+
 HuffStruct* Huff_Initialize_Adaptive_Encoder(const int AlphabetSize0)
 {
     int TotalNodes;
@@ -84,10 +76,10 @@ HuffStruct* Huff_Initialize_Adaptive_Encoder(const int AlphabetSize0)
 
     ThisEncoder->ZeroFreqCount = AlphabetSize0 + 2;
 
-    Huff_Factor_Remaining(ThisEncoder); /* set ZFE and ZFR */
-    Huff_Factor_Remaining(ThisEncoder); /* set ZFDB according to prev state */
+    Huff_Factor_Remaining(ThisEncoder); 
+    Huff_Factor_Remaining(ThisEncoder); 
 
-    /* ZFC is now AlphabetSize */
+    
 
     for(i = 0; i < TotalNodes * 2; i += 1) {
 	ThisEncoder->BlockArray[i].un.un_freeptr = ThisEncoder->BlockArray + i + 1;
@@ -96,9 +88,7 @@ HuffStruct* Huff_Initialize_Adaptive_Encoder(const int AlphabetSize0)
     ThisEncoder->BlockArray[TotalNodes * 2 - 1].un.un_freeptr = NULL;
     ThisEncoder->FreeBlock = ThisEncoder->BlockArray;
 
-    /* Zero frequency nodes are inserted in the first AlphabetSize
-     * positions, with Value, Weight, and a pointer to the next zero
-     * frequency node.  */
+    
     for(i = ThisEncoder->AlphabetSize - 1; i >= 0; i -= 1) {
 	Huff_Init_Node(ThisEncoder->Alphabet + i, i, AlphabetSize0);
     }
@@ -106,19 +96,6 @@ HuffStruct* Huff_Initialize_Adaptive_Encoder(const int AlphabetSize0)
     return ThisEncoder;
 }
 
-/* Huff_Initialize_Training_Encoder()
- *----------------------------------------------------------------------
- * returns an initialized encoder for encoding via a fixed table and
- * training that table for future uses.
- *----------------------------------------------------------------------
- * ``Huff_Initialize_Training_Encoder'' will create an empty table
- * if parameter table does not exist.  If table exists, it reads the
- * table from that file.  It encodes like the adaptive encoder.
- * @Huff_Dump_Stats (below) will dump two types of table, one is a
- * valid C file which may be included and used as a fixed table for
- * @Huff_Initialize_Fixed_Encoder, the other may be used again by
- * ``Huff_Initialize_Training_Encoder''.
- */
 HuffStruct* Huff_Initialize_Training_Encoder(const int AlphabetSize0,
 					     const char* filename)
 {
@@ -131,12 +108,6 @@ HuffStruct* Huff_Initialize_Training_Encoder(const int AlphabetSize0,
     return ThisEncoder;
 }
 
-/* Huff_Initialize_Fixed_Encoder()
- *
- * returns an initialized encoder for encoding via a fixed table which
- * was hard coded.  The header to include can be produced by a stats
- * file using the utility stats2header.
- */
 HuffStruct* Huff_Initialize_Fixed_Encoder(const int AlphabetSize0,
 					  HuffNode *table)
 {
@@ -173,11 +144,6 @@ HuffStruct* Huff_Initialize_Fixed_Encoder(const int AlphabetSize0,
     return ThisEncoder;
 }
 
-/* Huff_Encode_Data()
- *
- * Takes Huffman transmitter h and n, the nth elt in the alphabet, and
- * returns the number of required to encode n.
- */
 int Huff_Encode_Data(HuffStruct* H, int n)
 {
     HuffNode *TargetPtr = H->Alphabet + n;
@@ -186,11 +152,6 @@ int Huff_Encode_Data(HuffStruct* H, int n)
 
     H->CodedDepth = 0;
 
-    /* First encode the binary representation of the nth remaining
-     * zero frequency element in reverse such that bit, which will be
-     * encoded from H->CodedDepth down to 0 will arrive in increasing
-     * order following the tree path.  If there is only one left, it
-     * is not neccesary to encode these bits. */
     if(H->IsAdaptive && TargetPtr->Weight == 0) {
 	unsigned int where, shift;
 	int bits;
@@ -214,8 +175,6 @@ int Huff_Encode_Data(HuffStruct* H, int n)
 	TargetPtr = H->RemainingZeros;
     }
 
-    /* The path from root to node is stacked in reverse so that it is
-     * encoded in the right order */
     while(TargetPtr != H->RootNode) {
 	if(TargetPtr->Parent->RightChild == TargetPtr)
 	    H->CodedBits[H->CodedDepth++] = 1;
@@ -231,10 +190,7 @@ int Huff_Encode_Data(HuffStruct* H, int n)
     return H->CodedDepth;
 }
 
-/* Huff_Get_Encoded_Bit()
- *
- * Should be called as many times as Huff_Encode_Data returns.
- */
+
 Bit Huff_Get_Encoded_Bit(HuffStruct *H)
 {
     ASSERT(H->CodedDepth > 0, "You asked for too many bits");
@@ -244,12 +200,7 @@ Bit Huff_Get_Encoded_Bit(HuffStruct *H)
     return H->CodedBits[H->CodedDepth];
 }
 
-/*
- * Huff_Update_Tree --
- *
- *     This procedure updates the tree after Alphabet[n] has been encoded
- *     or decoded.
- */
+
 static void Huff_Update_Tree(HuffStruct *H, int n)
 {
     HuffNode *IncrNode;
@@ -263,16 +214,14 @@ static void Huff_Update_Tree(HuffStruct *H, int n)
     while(IncrNode != H->RootNode) {
 	Huff_Move_Right(H, IncrNode);
 	Huff_Promote(H, IncrNode);
-	IncrNode->Weight += 1;   /* incr the parent */
-	IncrNode = IncrNode->Parent; /* repeat */
+	IncrNode->Weight += 1;   
+	IncrNode = IncrNode->Parent; 
     }
 
     H->RootNode->Weight += 1;
 }
 
-/*
- * Huff_Move_Right --
- */
+
 static void Huff_Move_Right(HuffStruct *H, HuffNode *MovFwd)
 {
     HuffNode **ForParPtr, **BackParPtr;
@@ -324,11 +273,7 @@ static void Huff_Move_Right(HuffStruct *H, HuffNode *MovFwd)
     MovFwd->MyBlock->un.un_leader = MovFwd;
 }
 
-/*
- * Huff_Promote --
- *
- *     Shifts node, the leader of its block, into the next block.
- */
+
 static void Huff_Promote(HuffStruct *H, HuffNode *node)
 {
     HuffNode *MyLeft, *MyRight;
@@ -351,7 +296,7 @@ static void Huff_Promote(HuffStruct *H, HuffNode *node)
 	return;
     }
 
-    if(MyLeft != H->RemainingZeros) { /* true if not the leftmost node */
+    if(MyLeft != H->RemainingZeros) { 
 	if(MyLeft->MyBlock == CurBlock)
 	    MyLeft->MyBlock->un.un_leader = MyLeft;
 	else
@@ -360,20 +305,14 @@ static void Huff_Promote(HuffStruct *H, HuffNode *node)
 	return;
     }
 
-    /* node->Parent != MyRight) */
+    
     if((node->Weight == (MyRight->Weight - 1)) && (MyRight != H->RootNode))
 	node->MyBlock = MyRight->MyBlock;
     else
 	node->MyBlock = Huff_Make_Block(H, node);
 }
 
-/*
- * Huff_Increase_Zero_Weight --
- *
- *     When an element is seen the first time this is called to remove it
- *     from the list of zero weight elements and introduce a new internal
- *     node to the tree.
- */
+
 static HuffNode* Huff_Increase_Zero_Weight(HuffStruct *H, int n)
 {
     HuffNode *ThisZero, *NewInternal, *ZeroPtr;
@@ -381,7 +320,7 @@ static HuffNode* Huff_Increase_Zero_Weight(HuffStruct *H, int n)
     ThisZero = H->Alphabet + n;
 
     if(H->ZeroFreqCount == 1) {
-	/* this is the last one */
+	
 	ThisZero->RightChild = NULL;
 	if(ThisZero->RightBlock->Weight == 1) {
 	    ThisZero->MyBlock = ThisZero->RightBlock->MyBlock;
@@ -406,7 +345,7 @@ static HuffNode* Huff_Increase_Zero_Weight(HuffStruct *H, int n)
     NewInternal->MyBlock = Huff_Make_Block(H, NewInternal);
 
     if(H->RemainingZeros == H->RootNode) {
-	/* This is the first element to be coded */
+	
 	H->RootNode = NewInternal;
 	ThisZero->MyBlock = Huff_Make_Block(H, ThisZero);
     } else {
@@ -438,14 +377,7 @@ static HuffNode* Huff_Increase_Zero_Weight(HuffStruct *H, int n)
     return ThisZero;
 }
 
-/*
- * Huff_Find_Nth_Zero --
- *
- *     When a zero frequency element is encoded, it is followed by the
- *     binary representation of the index into the remaining elements.
- *     Sets a cache to the element before it so that it can be removed
- *     without calling this procedure again.
- */
+
 static unsigned int Huff_Find_Nth_Zero(HuffStruct* H, int n)
 {
     HuffNode *TargetPtr = H->Alphabet + n, *HeadPtr = H->RemainingZeros;
@@ -459,11 +391,7 @@ static unsigned int Huff_Find_Nth_Zero(HuffStruct* H, int n)
     return index;
 }
 
-/*
- * Huff_Eliminate_Zero --
- *
- *     Splices node out of the list of zeros.
- */
+
 static void Huff_Eliminate_Zero(HuffStruct* H, HuffNode *node)
 {
     if(H->ZeroFreqCount == 1)
@@ -482,9 +410,7 @@ static void Huff_Eliminate_Zero(HuffStruct* H, HuffNode *node)
     }
 }
 
-/*
- * Huff_Init_Node --
- */
+
 static void Huff_Init_Node(HuffNode *node, int i, int Size)
 {
     if(i < Size - 1)
@@ -502,9 +428,7 @@ static void Huff_Init_Node(HuffNode *node, int i, int Size)
     node->MyBlock = NULL;
 }
 
-/*
- * Huff_Swap_Ptrs --
- */
+
 static void Huff_Swap_Ptrs(HuffNode **one, HuffNode **two)
 {
     HuffNode *tmpone, *tmptwo;
@@ -516,14 +440,7 @@ static void Huff_Swap_Ptrs(HuffNode **one, HuffNode **two)
     *two = tmpone;
 }
 
-/*
- * Huff_Make_Block --
- *
- *     The data structure used is an array of blocks, which are unions
- *     of free pointers and huffnode pointers.  free blocks are a linked
- *     list of free blocks, the front of which is H->FreeBlock.  The
- *     used blocks are pointers to the head of each block.
- */
+
 static Block* Huff_Make_Block(HuffStruct *H, HuffNode* lead)
 {
     Block *ret = H->FreeBlock;
@@ -537,23 +454,14 @@ static Block* Huff_Make_Block(HuffStruct *H, HuffNode* lead)
     return ret;
 }
 
-/*
- * Huff_Free_Block --
- *
- *     Restores the block to the front of the free list.
- */
+
 static void Huff_Free_Block(HuffStruct *H, Block *b)
 {
     b->un.un_freeptr = H->FreeBlock;
     H->FreeBlock = b;
 }
 
-/*
- * Huff_Factor_Remaining --
- *
- *     sets ZeroFreqCount, ZeroFreqRem, and ZeroFreqExp to satsity the
- *     equation given above.
- */
+
 static void Huff_Factor_Remaining(HuffStruct *H)
 {
     unsigned int i;
@@ -571,11 +479,7 @@ static void Huff_Factor_Remaining(HuffStruct *H)
     H->ZeroFreqRem = H->ZeroFreqCount - i;
 }
 
-/* Huff_Decode_Bit()
- *
- * receives a bit at a time and returns true when a complete code has
- * been received.
- */
+
 int Huff_Decode_Bit(HuffStruct* H, Bit b)
 {
     if(H->IsAdaptive && H->DecodePtr->Weight == 0) {
@@ -605,9 +509,7 @@ int Huff_Decode_Bit(HuffStruct* H, Bit b)
     }
 }
 
-/*
- * Huff_Nth_Zero --
- */
+
 static int Huff_Nth_Zero(HuffStruct* H, int n)
 {
     HuffNode *Ret = H->RemainingZeros;
@@ -619,12 +521,7 @@ static int Huff_Nth_Zero(HuffStruct* H, int n)
     return Ret - H->Alphabet;
 }
 
-/* Huff_Decode_Data()
- *
- * once ReceiveBit returns 1, this retrieves an index into the
- * alphabet otherwise this returns 0, indicating more bits are
- * required.
- */
+
 int Huff_Decode_Data(HuffStruct* H)
 {
     unsigned int elt = H->DecodePtr - H->Alphabet;
@@ -650,10 +547,7 @@ int Huff_Decode_Data(HuffStruct* H)
     return elt;
 }
 
-/* Huff_Delete()
- *
- * deletion.
- */
+
 void Huff_Delete(HuffStruct* H)
 {
     free(H->Alphabet);
@@ -662,10 +556,7 @@ void Huff_Delete(HuffStruct* H)
     free(H);
 }
 
-/* Huff_Dump_Stats()
- *
- * write a table.
- */
+
 int Huff_Dump_Stats(HuffStruct* H,
 		    const char* filename)
 {
@@ -690,14 +581,7 @@ int Huff_Dump_Stats(HuffStruct* H,
     return 1;
 }
 
-/*
- * Huff_Read_Stats --
- *
- *     Takes a huffstruct and reads the stats file, using the adaptive
- *     routines to build a tree with the correct frequencies.  this is
- *     slower than it could be, but it is assumed that read stats will
- *     only be used in training.
- */
+
 static int Huff_Read_Stats(HuffStruct *H,
 			   int AlphabetSize,
 			   const char* filename)
@@ -749,9 +633,9 @@ int main()
     FILE* foo = fopen("/dev/null", "w");
 
     for(i = 0; i < 10; i += 1) {
-	/*for(j = i; j >= 0; j -= 1) { */
+	
 	    write_byte(encoder, foo, i);
-	    /*} */
+	    
     }
 }
 
@@ -759,16 +643,11 @@ void print_node(HuffStruct *H, HuffNode *node)
 {
     HuffNode *off = H->Alphabet;
 
-    fprintf(stderr, "#<%d (%d) %d> ", /*"#<%snode %d lc %d rc %d w %d l %d> ", */
+    fprintf(stderr, "#<%d (%d) %d> ", 
 
-/* lb %d rb %d p %d  */
-/*	    (node == H->RemainingZeros ? "zeros " : ""), */
+
 	    (int)(node - off),
-/*	    (node->LeftChild ? (int)(node->LeftChild - off) : -1),
-	    (node->RightChild ? (int)(node->RightChild - off) : -1),
-	    (node->LeftBlock ? (int)(node->LeftBlock - off) : -1),
-	    (node->RightBlock ? (int)(node->RightBlock - off) : -1),
-	    (node->Parent ? (int)(node->Parent - off) : -1), */
+
 	    (int)node->Weight,
 	    (node->MyBlock ? (int)(node->MyBlock->un.un_leader - off) : -1));
 }
@@ -815,15 +694,8 @@ void print_tree(HuffStruct *H)
 #endif
 
 
-/* returns an initialized Adaptive Huffman decoder for an alphabet
- * with the given size.  returns NULL if enough memory cannot be
- * allocated.  */
+
 HuffStruct* Huff_Initialize_Adaptive_Decoder(int AlphabetSize);
 
-/* No iterface is provided for training a set of data while decoding,
- * though this would be easy to implement */
 
-/* returns an initialized Fixed Huffman decoder for an alphabet
- * with the given size. */
-HuffStruct* Huff_Initialize_Fixed_Decoder(int AlphabetSize,
-					  HuffNode* table);
+HuffStruct* Huff_Initialize_Fixed_Decoder(int AlphabetSize, HuffNode* table);
