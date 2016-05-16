@@ -692,8 +692,6 @@ int main(int argc, char const *argv[])
             if (txt_block > 0)
             {
                 BWT(txt_block, name_input, name_output, label);
-
-                printf("ok\n");
             }
             else printf("TAMANHO INVALIDO -> BLOCO DE TEXTO\n");
         }//Huffman
@@ -702,11 +700,9 @@ int main(int argc, char const *argv[])
             if (bwt)
             {
                 system(str);
-                printf("\nVariavel STR: %s\n", str);
                 free(name_input);
                 name_input=(char*)malloc(22*sizeof(char));
                 strcpy(name_input, "arquivoAuxiliar.bin");
-                printf("\nString name input: %s\n", name_input);
             }
             /* Huffman(); */
             CallHuffman(name_input, name_output, label);
@@ -733,7 +729,6 @@ int main(int argc, char const *argv[])
     }
     else if (decode)
     {
-        printf("\nEntrou no Decode\n");
         if ((AuxiliarArq = fopen(name_input,"rb")) == NULL)
         {
             printf("\nErro ao abrir o arquivo entrada\n");
@@ -766,7 +761,6 @@ int main(int argc, char const *argv[])
                 fread(label, sizeof(CABECALHO), 1, AuxiliarArq);
                 fclose(AuxiliarArq);
             }
-            printf("\nTEste do huffman decode\n");
             /* UnHuffman(); */
             UndoHuffman(name_input, name_output);
         }
