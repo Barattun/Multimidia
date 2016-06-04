@@ -4,3 +4,4 @@ unhuffman.c
 *.o
 libhuff.a
 Makefile.bak
+ArquivosIgnorados
