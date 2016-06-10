@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -Wall
-DEPS =
-OBJ = main.o
+CFLAGS = -Wall -O3
+DEPS = AuxiliarFunction.h
+OBJ = main.o AuxiliarFunction.o
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
