@@ -1,9 +1,9 @@
 # Multimidia
 Trabalho - compressor de texto
 
-Nome dos alunos:
-	Bruno Molina Rosaboni n° 7656533
-	Werik Amaral Fachim n° 7656512
+Autores:
+	Bruno Molina Rosaboni 
+	Werik Amaral Fachim 
 
 O trabalho foi desenvolvido utilizando a linguagem C e compilado utilizando o GNU GCC. Todo o processo foi realizado em ambiente Linux.
 
